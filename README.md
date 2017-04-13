@@ -82,7 +82,7 @@ First, you are going to enable MARS prior to performing the compilation, just ex
 make oldconfig
 ```
 
-Just make sure that when you get this prompt "storage system MARS (EXPERIMENTAL) (MARS) [N/m/y/?] (NEW)" you type **m**. You can simply press ENTER for the rest of the questions to keep the default values.
+Just make sure that when you get this prompt "storage system MARS (EXPERIMENTAL) (MARS) [N/m/y/?] (NEW)" you type **m**. You can simply press ENTER on each prompt to keep the default values.
 
 Now you are ready to actually compile your new kernel and generate the .deb files you need to patch your existing kernel:
 
@@ -92,7 +92,7 @@ make deb-pkg
 
 At the end of this process and if everything goes well, you will see some new .deb files under ```/home/myuser/kernel```.
 
-**5. Install your new kernel into your MARS hosts**
+**5. Copy your new kernel into all your MARS hosts**
 
 Create a new folder into all of your MARS hosts
 
@@ -108,10 +108,88 @@ Copy the following files into your newly created folders on all of your MARS hos
 /home/myuser/kernel/linux-[kernel version]/block/mars/userspace/marsadm
 ```
 
-Log into all of your MARS host servers and install your new kernel on each of them
+## Prepare MARS hosts
+
+**1. Log into all of your MARS host servers and install your new kernel on each of them**
 
 ```
 dpkg -i /home/myuser/kernel/*.deb
 ```
 
 Make sure you **reboot all of your MARS hosts after completing the kernel update**.
+
+**2. Install the marsadm utility**
+
+```
+cp /home/myuser/kernel/marsadm /usr/local/bin && chmod +x /usr/local/bin/marsadm
+```
+
+**3. Enable SSH root login**
+
+You will have to select one of your MARS hosts as your "first cluster server". Your other MARS hosts will require remote SSH access using their local root account.
+
+The first step is to enable SSH root login in your first cluster server, you need to manually open the SSHD configuration file ```/etc/ssh/sshd_config``` within your first cluster server and change these lines
+
+```
+FROM:
+PermitRootLogin prohibit-password
+TO:
+PermitRootLogin yes
+```
+
+```
+FROM:
+PermitRootLogin prohibit-password
+PermitRootLogin no
+TO:
+PermitRootLogin yes
+PermitRootLogin yes
+```
+
+Then reload the configuration file to apply your changes
+
+```
+service ssh reload
+```
+
+**4. SSH Login Without Password**
+
+You will have to repeat these instructions in all of your MARS hosts except from your first cluster server. Execute the following command and press ENTER on each prompt
+
+```
+ssh-keygen
+```
+```
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/user/.ssh/id_rsa):
+Enter passphrase (empty for no passphrase): 
+Enter same passphrase again: 
+Your identification has been saved in /home/user/.ssh/id_rsa.
+Your public key has been saved in /home/user/.ssh/id_rsa.pub.
+The key fingerprint is:
+b2:ad:a0:80:85:ad:6c:16:bd:1c:e7:63:4f:a0:00:15 user@host
+The key's randomart image is:
++--[ RSA 2048]----+
+|  E.             |
+| .               |
+|.                |
+|.o.              |
+|.ooo o. S        |
+|oo+ * .+         |
+|++ +.+...        |
+|o. ...+.         |
+|  .   ..         |
++-----------------+
+```
+
+Then copy your newly created key into your first cluster server
+
+```
+ssh-copy-id root@[first cluster server]
+```
+
+Finally log into your first cluster server from your current MARS host
+
+```
+ssh root@[first cluster server]
+```
