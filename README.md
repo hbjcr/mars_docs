@@ -17,12 +17,12 @@ This document merges all this information plus additional research that was requ
 ## Pre-requisites
 
 1. Read the manual. Seriously.
-2. MARS only runs on a 64-bit compatible OS. This guide was built and tested using Ubuntu 14.04 x64, so it is recommended that you also use the same version the first time you are doing this and then you can try it out on a newer version after understanding the basics.
+2. MARS only runs on a 64-bit compatible OS. I highly recommend doing this tutorial using Ubuntu 14.04 the first time because that will increase your chances of success. After getting MARS up and running you can then try a newer OS version or even a different OS when you understand the basics.
 3. You will need a host to recompile the kernel, this tutorial assumes your host already has all the utilities required to perform this task. Moreover, the kernel will be built using [the old fashioned way](https://help.ubuntu.com/community/Kernel/Compile#Alternate_Build_Method:_The_Old-Fashioned_Debian_Way) method.
 
 ## Kernel compilation
 
-1. Determine which kernel version you are going to use and install it
+**1. Determine which kernel version you are going to use and install it**
 
 MARS requires patching the kernel sources prior to compilation, these patches are [available for several versions](https://github.com/schoebel/mars/tree/master/pre-patches) of the kernel but not all of them. Ubuntu 14.04 in particular comes by default with a kernel version (3.13) that is not listed among this list which is why it is highly recommended to patch the OS with a supported version prior to performing any other action.
 
@@ -40,7 +40,7 @@ sudo apt-get install linux-generic-lts-xenial
 
 Then make sure you **reboot your server** to ensure your new kernel is now being used.
 
-2. Download your kernel's source code for recompilation
+**2. Download your kernel's source code for recompilation**
 
 You are going to need a working folder, this guide will assume your working directory is going to be __/home/myuser__ from now on.
 
@@ -58,7 +58,7 @@ If everything goes well, you will end up with a structure similar to this:
 /home/myuser/kernel/linux-lts[kernel version]
 ```
 
-3. Patch your kernel with MARS' pre-patch files
+**3. Patch your kernel with MARS' pre-patch files**
 
 Clone MARS' repo into your ```/home/myuser/kernel/linux-lts[kernel version]/block``` folder (make sure you perform the clone from the right folder, you don't want to clone your files on the wrong folder)
 
@@ -74,7 +74,7 @@ patch -p1 < /home/myuser/kernel/linux-[kernel version]/block/mars/pre-patches/va
 
 Just make sure you apply all the patches listed there.
 
-4. Build your new kernel packages
+**4. Build your new kernel packages**
 
 First, you are going to enable MARS prior to performing the compilation, just execute the following command:
 
@@ -91,3 +91,27 @@ make deb-pkg
 ```
 
 At the end of this process and if everything goes well, you will see some new .deb files under ```/home/myuser/kernel```.
+
+**5. Install your new kernel into your MARS hosts**
+
+Create a new folder into all of your MARS hosts
+
+```
+mkdir -p /home/myuser/kernel
+```
+
+Copy the following files into your newly created folders on all of your MARS hosts
+
+```
+/home/myuser/kernel/linux-headers-[kernel version]_amd64.deb
+/home/myuser/kernel/linux-image-[kernel version]_amd64
+/home/myuser/kernel/linux-[kernel version]/block/mars/userspace/marsadm
+```
+
+Log into all of your MARS host servers and install your new kernel on each of them
+
+```
+dpkg -i /home/myuser/kernel/*.deb
+```
+
+Make sure you **reboot all of your MARS hosts after completing the kernel update**.
