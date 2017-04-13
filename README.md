@@ -19,6 +19,7 @@ This document merges all this information plus additional research that was requ
 1. Read the manual. Seriously.
 2. MARS only runs on a 64-bit compatible OS. I highly recommend doing this tutorial using Ubuntu 14.04 the first time because that will increase your chances of success. After getting MARS up and running you can then try a newer OS version or even a different OS when you understand the basics.
 3. You will need a host to recompile the kernel, this tutorial assumes your host already has all the utilities required to perform this task. Moreover, the kernel will be built using [the old fashioned way](https://help.ubuntu.com/community/Kernel/Compile#Alternate_Build_Method:_The_Old-Fashioned_Debian_Way) method.
+4. You will need an extra partition to host the data that will be replicated by MARS. This means at the very minimum, you will need the default parition to host your OS and an additional partition to host your MARS data.
 
 ## Kernel compilation
 
@@ -108,7 +109,7 @@ Copy the following files into your newly created folders on all of your MARS hos
 /home/myuser/kernel/linux-[kernel version]/block/mars/userspace/marsadm
 ```
 
-## Prepare MARS hosts
+## Prepare MARS server nodes
 
 **1. Log into all of your MARS host servers and install your new kernel on each of them**
 
@@ -133,13 +134,6 @@ The first step is to enable SSH root login in your first cluster server, you nee
 ```
 FROM:
 PermitRootLogin prohibit-password
-TO:
-PermitRootLogin yes
-```
-
-```
-FROM:
-PermitRootLogin prohibit-password
 PermitRootLogin no
 TO:
 PermitRootLogin yes
@@ -154,7 +148,7 @@ service ssh reload
 
 **4. SSH Login Without Password**
 
-You will have to repeat these instructions in all of your MARS hosts except from your first cluster server. Execute the following command and press ENTER on each prompt
+Make sure you execute these commands using your **root** account. You will have to repeat these instructions in all of your MARS hosts except from your first cluster server. Execute the following command and press ENTER on each prompt
 
 ```
 ssh-keygen
@@ -193,3 +187,44 @@ Finally log into your first cluster server from your current MARS host
 ```
 ssh root@[first cluster server]
 ```
+
+## Setup a new MARS cluster
+
+**1. Create a new folder for the transaction logs**
+
+MARS uses the folder ```/mars``` to store its transaction logs, it is a good idea to mount a different partition (dedicated disk) into this folder, but in this tutorial you will simply create a new folder in every MARS host
+
+```mkdir /mars```
+
+**2. Create a new MARS cluster**
+
+Execute the following command in the first cluster server only
+
+```
+marsadm create-cluster
+```
+
+**3. Join the rest of the cluster nodes to your newly created MARS cluster**
+
+```
+marsadm join-cluster [first cluster server]
+```
+
+**4. Load the MARS kernel module**
+
+Execute the following command on all of your MARS cluster nodes
+
+```
+modprobe mars
+```
+
+**5. Check if the cluster is healthy**
+
+If the cluster is healthy, you will see communication going back and forth using port 7777
+
+```
+netstat --tcp | grep 7777
+```
+
+## Create a new resource for your MARS cluster
+
