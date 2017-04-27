@@ -19,7 +19,7 @@ This document merges all this information plus additional research that was requ
 1. Read the manual. Seriously.
 2. MARS only runs on a 64-bit compatible OS. I highly recommend doing this tutorial using Ubuntu 14.04 the first time because that will increase your chances of success. After getting MARS up and running you can then try a newer OS version or even a different OS when you understand the basics.
 3. You will need a host to recompile the kernel, this tutorial assumes your host already has all the utilities required to perform this task. Moreover, the kernel will be built using [the old fashioned way](https://help.ubuntu.com/community/Kernel/Compile#Alternate_Build_Method:_The_Old-Fashioned_Debian_Way) method.
-4. You will need an extra partition to host the data that will be replicated by MARS. This means at the very minimum, you will need the default parition to host your OS and an additional partition to host your MARS data.
+4. You will need an extra partition to host the data that will be replicated by MARS. This means at the very minimum, you will need the default partition to host your OS and an additional partition to host your MARS data.
 
 ## Kernel compilation
 
