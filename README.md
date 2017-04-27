@@ -187,6 +187,71 @@ Finally log into your first cluster server from your current MARS host
 ```
 ssh root@[first cluster server]
 ```
+## Create your data block device
+
+This section assumes you have a /dev/sdb disk available to create the new block device. More information on how to create block devices can be found [here](https://siva2009.wordpress.com/2010/08/26/how-to-create-lvm-using-pvcreate-vgcreate-lvcreate-and-lvextend-commands/). If you want to learn more on how to create partition then you will find more information [here](https://download.parallels.com/desktop/v5/docs/en/Parallels_Desktop_Users_Guide/23117.htm).
+
+**1. Create a new MBR partition**
+
+Start fdisk using the following command:
+
+```
+fdisk /dev/sdb
+
+```
+
+In fdisk, to create a new partition, type the following command:
+
+```
+n
+```
+
+* When prompted to specify the Partition type, type p to create a primary partition or e to create an extended one. There may be up to four primary partitions. If you want to create more than four partitions, make the last partition extended, and it will be a container for other logical partitions.
+* When prompted for the Number, in most cases, type 3 because a typical Linux virtual machine has two partitions by default.
+* When prompted for the Start cylinder, type a starting cylinder number or press Return to use the first cylinder available.
+* When prompted for the Last cylinder, press Return to allocate all the available space or specify the size of a new partition in cylinders if you do not want to use all the available space.
+
+Write your changes:
+
+```
+w
+```
+
+**2. Create a new physical volume**
+
+```
+pvcreate /dev/sdb1
+```
+
+**3. Create a new volume group**
+
+```
+vgcreate vol_grp_myspace /dev/sdb1
+```
+
+**4. Create the logical volume**
+
+```
+lvcreate --name myspace --extents 100%FREE vol_grp_myspace
+```
+
+**5. Format the new volume**
+
+```
+mkfs.ext4 /dev/vol_grp_myspace/myspace
+```
+
+**6. Create a new folder to mount the volume**
+
+```
+mkdir /data
+```
+
+**6. Mount the new volume**
+
+```
+mount /dev/vol_grp_myspace/myspace /data
+```
 
 ## Setup a new MARS cluster
 
@@ -194,7 +259,9 @@ ssh root@[first cluster server]
 
 MARS uses the folder ```/mars``` to store its transaction logs, it is a good idea to mount a different partition (dedicated disk) into this folder, but in this tutorial you will simply create a new folder in every MARS host
 
-```mkdir /mars```
+```
+mkdir /mars
+```
 
 **2. Create a new MARS cluster**
 
