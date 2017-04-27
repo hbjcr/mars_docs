@@ -127,9 +127,9 @@ cp /home/myuser/kernel/marsadm /usr/local/bin && chmod +x /usr/local/bin/marsadm
 
 **3. Enable SSH root login**
 
-You will have to select one of your MARS hosts as your "first cluster server". Your other MARS hosts will require remote SSH access using their local root account.
+You will have to select one of your MARS hosts as your "Node A" (the first node on your cluster). Your other MARS hosts will require remote SSH access using their local root account.
 
-The first step is to enable SSH root login in your first cluster server, you need to manually open the SSHD configuration file ```/etc/ssh/sshd_config``` within your first cluster server and change these lines
+The first step is to enable SSH root login on your Node A, you need to manually open the SSHD configuration file ```/etc/ssh/sshd_config``` within your Node A and change these lines
 
 ```
 FROM:
@@ -148,7 +148,7 @@ service ssh reload
 
 **4. SSH Login Without Password**
 
-Make sure you execute these commands using your **root** account. You will have to repeat these instructions in all of your MARS hosts except from your first cluster server. Execute the following command and press ENTER on each prompt
+Make sure you execute these commands using your **root** account. You will have to repeat these instructions in all of your MARS hosts except from your Node A. Execute the following command and press ENTER on each prompt
 
 ```
 ssh-keygen
@@ -176,16 +176,16 @@ The key's randomart image is:
 +-----------------+
 ```
 
-Then copy your newly created key into your first cluster server
+Then copy your newly created key into your Node A
 
 ```
-ssh-copy-id root@[first cluster server]
+ssh-copy-id root@[Node A]
 ```
 
-Finally log into your first cluster server from your current MARS host
+Finally log into your Node A from your current MARS host
 
 ```
-ssh root@[first cluster server]
+ssh root@[Node A]
 ```
 ## Create your data block device
 
@@ -253,7 +253,7 @@ mkdir /mars
 
 **2. Create a new MARS cluster**
 
-Execute the following command in the first cluster server only
+Execute the following command in the Node A only
 
 ```
 marsadm create-cluster
@@ -262,7 +262,7 @@ marsadm create-cluster
 **3. Join the rest of the cluster nodes to your newly created MARS cluster**
 
 ```
-marsadm join-cluster [first cluster server]
+marsadm join-cluster [Node A]
 ```
 
 **4. Load the MARS kernel module**
@@ -285,13 +285,13 @@ netstat --tcp | grep 7777
 
 **1. Create a new primary resource**
 
-In order to create a new cluster, execute the following command **ONE TIME ONLY** in your first cluster server
+In order to create a new cluster, execute the following command **ONE TIME ONLY** on your Node A
 
 ```
 marsadm create-resource mydata /dev/vol_grp_myspace/myspace
 ```
 
-As a result, a directory /mars/resource-mydata/ will be created on node A, containing some symlinks. Node A will automatically start in the primary role for this resource. Therefore, a new pseudo-device /dev/mars/mydata will also appear after a few seconds.
+As a result, a directory /mars/resource-mydata/ will be created on Node A, containing some symlinks. Node A will automatically start in the primary role for this resource. Therefore, a new pseudo-device /dev/mars/mydata will also appear after a few seconds.
 Note that the initial contents of /dev/mars/mydata will be exactly the same as in your pre-existing disk /dev/vol_grp_myspace/myspace.
 
 **2. Create a new folder to mount the volume**
