@@ -189,7 +189,7 @@ ssh root@[first cluster server]
 ```
 ## Create your data block device
 
-This section assumes you have a /dev/sdb disk available to create the new block device. More information on how to create block devices can be found [here](https://siva2009.wordpress.com/2010/08/26/how-to-create-lvm-using-pvcreate-vgcreate-lvcreate-and-lvextend-commands/). If you want to learn more on how to create partition then you will find more information [here](https://download.parallels.com/desktop/v5/docs/en/Parallels_Desktop_Users_Guide/23117.htm).
+This section assumes you have a /dev/sdb disk available to create the new block device. More information on how to create block devices can be found [here](http://software.clapper.org/cheat-sheets/linux.html). If you want to learn more on how to create partition then you will find more information [here](https://download.parallels.com/desktop/v5/docs/en/Parallels_Desktop_Users_Guide/23117.htm).
 
 **1. Create a new MBR partition**
 
@@ -241,18 +241,6 @@ lvcreate --name myspace --extents 100%FREE vol_grp_myspace
 mkfs.ext4 /dev/vol_grp_myspace/myspace
 ```
 
-**6. Create a new folder to mount the volume**
-
-```
-mkdir /data
-```
-
-**6. Mount the new volume**
-
-```
-mount /dev/vol_grp_myspace/myspace /data
-```
-
 ## Setup a new MARS cluster
 
 **1. Create a new folder for the transaction logs**
@@ -295,3 +283,41 @@ netstat --tcp | grep 7777
 
 ## Create a new resource for your MARS cluster
 
+**1. Create a new primary resource**
+
+In order to create a new cluster, execute the following command **ONE TIME ONLY** in your first cluster server
+
+```
+marsadm create-resource mydata /dev/vol_grp_myspace/myspace
+```
+
+As a result, a directory /mars/resource-mydata/ will be created on node A, containing some symlinks. Node A will automatically start in the primary role for this resource. Therefore, a new pseudo-device /dev/mars/mydata will also appear after a few seconds.
+Note that the initial contents of /dev/mars/mydata will be exactly the same as in your pre-existing disk /dev/vol_grp_myspace/myspace.
+
+**2. Create a new folder to mount the volume**
+
+```
+mkdir /mydata
+```
+
+**3. Mount the new volume**
+
+```
+mount /dev/mars/mydata /mydata
+```
+
+At this point you can access the contents of your disk using the mountpoint /mydata.
+
+## Join the other nodes to your MARS cluster
+
+**1. Join a primary resource**
+
+```
+marsadm join-resource mydata /dev/vol_grp_myspace/myspace
+```
+
+**2. Check all of your nodes to ensure everything is OK**
+
+```
+marsadm view mydata
+```
